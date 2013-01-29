@@ -1,5 +1,6 @@
 define([
   "genesis",
+  "services/backend",
   "modules/status",
   "modules/validation",
   "backbone",
@@ -8,10 +9,11 @@ define([
   "jvalidate"
 ],
 
-function(genesis, status, validation, Backbone, $) {
+function(genesis, backend, status, validation, Backbone, $) {
   var Servers = genesis.module();
 
-  Servers.ArrayModel = Backbone.Model.extend({
+  Servers.ArrayModel = genesis.Backbone.Model.extend({
+    linkType: backend.LinkTypes.ServerArray,
 
     urlRoot: function() {
       return "rest/projects/" + this.get("projectId") + "/server-arrays";
@@ -22,36 +24,25 @@ function(genesis, status, validation, Backbone, $) {
     }
   });
 
-  Servers.ArrayCollection = Backbone.Collection.extend({
+  Servers.ArrayCollection = genesis.Backbone.Collection.extend({
     model: Servers.ArrayModel,
+    linkType: backend.LinkTypes.ServerArray,
 
     initialize: function(elements, options) {
       this.projectId = options.projectId;
     },
 
-    url: function() { return "rest/projects/" + this.projectId + "/server-arrays"; },
-
-    parse: function(json) {
-      if (json.items) {
-        return json.items;
-      } else {
-        return json;
-      }
-    }
+    url: function() { return "rest/projects/" + this.projectId + "/server-arrays"; }
   });
 
   Servers.ServerModel = Backbone.Model.extend({
-    parse: function(json) {
-      if(json.result) {
-        return json.result;
-      } else {
-        return json;
-      }
-    }
+    linkType: backend.LinkTypes.Server
   });
 
-  Servers.ServersCollection = Backbone.Collection.extend({
+  Servers.ServersCollection = genesis.Backbone.Collection.extend({
     model: Servers.ServerModel,
+    linkType: backend.LinkTypes.Server,
+
     initialize: function(elements, options) {
       this.projectId = options.projectId;
       this.serverArrayId = options.serverArrayId;
@@ -196,7 +187,11 @@ function(genesis, status, validation, Backbone, $) {
     render: function() {
       var self = this;
       $.when(genesis.fetchTemplate(this.template)).done(function(tmpl) {
-        self.$el.html( tmpl({"serverArrays" : self.collection.toJSON()}));
+        self.$el.html( tmpl({
+          "serverArrays" : self.collection.toJSON(),
+          "accessRights": self.collection.itemAccessRights(),
+          "canCreate": self.collection.canCreate()
+        }));
         self.dialog = self.initConfirmationDialog();
         self.delegateEvents(self.events);
       });
@@ -333,7 +328,12 @@ function(genesis, status, validation, Backbone, $) {
     render: function() {
       var self = this;
       $.when(genesis.fetchTemplate(this.template)).done(function(tmpl) {
-        self.$el.html( tmpl({array: self.array.toJSON(), servers: self.servers.toJSON()}) );
+        self.$el.html( tmpl({
+          array: self.array.toJSON(),
+          servers: self.servers.toJSON(),
+          canCreate: self.servers.canCreate(),
+          accessRights: self.servers.itemAccessRights()
+        }) );
 
         self.delegateEvents(self.events);
         self.dialog = self.initConfirmationDialog();
