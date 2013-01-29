@@ -29,9 +29,11 @@ import com.griddynamics.genesis.service.ConfigService
 import com.griddynamics.genesis.service.GenesisSystemProperties.{PREFIX, PLUGIN_PREFIX}
 import com.griddynamics.genesis.rest.GenesisRestController.{extractParamsMap, paramToOption}
 import javax.servlet.http.HttpServletRequest
-import com.griddynamics.genesis.api.{ConfigProperty, ConfigPropertyType, ExtendedResult, Failure, Success}
+import com.griddynamics.genesis.api.{DataBag, Environment, ConfigProperty, ConfigPropertyType, ExtendedResult, Failure, Success}
 import org.springframework.beans.factory.annotation.Autowired
 import com.griddynamics.genesis.rest.links.Link
+import com.griddynamics.genesis.rest.annotations.LinkTarget
+import links._
 
 case class SystemSettings(links: Array[Link]) //TODO: move to api after link will be moved
 
@@ -49,7 +51,9 @@ class SettingsController extends RestApiExceptionsHandler {
 
     @RequestMapping(value = Array("root"), method = Array(RequestMethod.GET)) //TODO: mapping will be changed
     @ResponseBody
-    def root(): SystemSettings = new SystemSettings(Array())
+    def root(request: HttpServletRequest): SystemSettings = SystemSettings(links = Array(
+      Link(request, LinkTarget.SELF, classOf[DataBag], RequestMethod.GET)
+    ))
 
     @RequestMapping(value = Array(""), method = Array(RequestMethod.GET))
     @ResponseBody

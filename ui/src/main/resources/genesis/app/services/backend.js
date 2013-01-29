@@ -105,7 +105,7 @@ function(genesis, $) {
 
     whoami: function() {
       return $.ajax({
-        url: "rest/whoami",
+        url: "rest/",
         dataType: "json",
         type: "GET",
         timeout: DEFAULT_TIMEOUT
@@ -257,6 +257,27 @@ function(genesis, $) {
         suppressErrors: true
       })
     }
+  };
+
+
+  function _type(name) {
+    return "application/vnd.griddynamics.genesis." + name + "+json";
+  }
+
+  backend.LinkTypes = {
+    SystemSettings:_type("SystemSettings"),
+    Project: _type("Project"),
+    Environment: _type("Environment"),
+    ProjectSettings: _type("ProjectSettings"),
+
+    ConfigProperty: _type("ConfigProperty"),
+    User: _type("User"),
+    UserGroup: _type("UserGroup"),
+    Role: _type("Role"),
+    Plugin: _type("Plugin"),
+    DataBag: _type("DataBag"),
+    RemoteAgent: _type("RemoteAgent")
+
   };
 
   return backend;
