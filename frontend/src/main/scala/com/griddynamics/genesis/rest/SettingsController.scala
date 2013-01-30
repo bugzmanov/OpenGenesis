@@ -51,9 +51,7 @@ class SettingsController extends RestApiExceptionsHandler {
 
     @RequestMapping(value = Array("root"), method = Array(RequestMethod.GET)) //TODO: mapping will be changed
     @ResponseBody
-    def root(request: HttpServletRequest): SystemSettings = SystemSettings(links = Array(
-      Link(request, LinkTarget.SELF, classOf[DataBag], RequestMethod.GET)
-    ))
+    def root(request: HttpServletRequest): SystemSettings = SystemSettings(Array())
 
     @RequestMapping(value = Array(""), method = Array(RequestMethod.GET))
     @ResponseBody
