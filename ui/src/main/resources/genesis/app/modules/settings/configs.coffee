@@ -14,8 +14,6 @@ define [
   URL = "rest/settings"
   TIMEOUT_AJAX = 4000
 
-
-
   class Settings.Model extends Backbone.Model
     idAttribute: "name"
     url: URL

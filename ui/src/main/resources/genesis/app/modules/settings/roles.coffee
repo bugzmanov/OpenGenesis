@@ -44,7 +44,6 @@ define [
     initialize: (options) ->
       _.bind @render, this
       @collection = new Backbone.Collection()
-      debugger;
       rolesLoader = (if (options.projectId) then `_.partial(backend.AuthorityManager.projectRoles, options.projectId)` else backend.AuthorityManager.roles)
       $.when(rolesLoader()).done (roles) =>
         modelOptions = (if (options.projectId) then projectId: options.projectId else {})

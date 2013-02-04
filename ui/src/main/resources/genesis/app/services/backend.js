@@ -276,7 +276,10 @@ function(genesis, $) {
     SystemSettings: new _type("SystemSettings"),
     Project: new _type("Project"),
     Environment: new _type("Environment"),
+    EnvironmentDetails: new _type("EnvironmentDetails"),
     ProjectSettings: new _type("Credentials"),//todo:!!!!
+
+    Workflow: new _type("Workflow"),
 
     ConfigProperty: new _type("ConfigProperty"),
     User: new _type("User"),
@@ -294,7 +297,11 @@ function(genesis, $) {
 
     TemplateRepo: new _type("TemplateRepo"),
     EnvConfig: new _type("Configuration"),
-    EnvConfigAccess: new _type("Access")
+    EnvConfigAccess: new _type("Access"),
+
+    ResetAction: new _type("ResetAction$"),
+    CancelAction: new _type("CancelAction$")
+
   };
 
   return backend;
