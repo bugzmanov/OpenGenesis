@@ -1,0 +1,43 @@
+<p class="twitter_widget">
+    <script src="http://widgets.twimg.com/j/2/widget.js"></script>
+    <script>
+        new TWTR.Widget({
+            version: 2,
+            type: 'profile',
+            rpp: 4,
+            interval: 30000,
+            width: 'auto',
+            height: 300,
+            theme: {
+                shell: {
+                    background: '#EEE',
+                    color: '#404040'
+                },
+                tweets: {
+                    background: '#EEE',
+                    color: '#555',
+                    links: '#00438A'
+                }
+            },
+            features: {
+                scrollbar: false,
+                loop: false,
+                live: false,
+                behavior: 'all'
+            }
+        }).render().setUser('opengenesis').start();
+    </script>
+</p>
+
+<p><a href="https://twitter.com/opengenesis" class="twitter-follow-button" data-link-color="#0069D6"
+      data-show-count="true">Follow @opengenesis</a></p>
+
+<ul class="buttons unstyled">
+    <li><a href="http://github.com/griddynamics/OpenGenesis" rel="me" class="social github" title="Go to github.com/griddynamics" target="_blank"></a></li>
+    <!--<li><a href="http://www.linkedin.com/pub/eric-jones/a/848/1b3" rel="me" class="social linkedin" title="Go to LinkedIn profile" target="_blank"></a></li>-->
+    <li><a href="http://www.twitter.com/opengenesis" rel="me" class="social twitter" title="Go to twitter.com/opengenesis" target="_blank"></a></li>
+    <li><a href="http://feeds.feedburner.com/github/xmyo" rel="me" class="social rss" title="Go to feedburner erjjones rss feed" target="_blank"></a></li>
+    <!--<li><a href="https://plus.google.com/u/0/114561259331203581412/posts" rel="me" class="social gplus" title="Go to Google Plus profile" target="_blank"></a></li>-->
+    <li><a href="https://github.com/griddynamics/OpenGenesis/issues/new" rel="me" class="social mail" title="Leave feedback" target="_blank"></a></li>
+</ul>
+

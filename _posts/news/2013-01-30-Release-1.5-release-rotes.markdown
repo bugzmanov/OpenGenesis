@@ -1,0 +1,44 @@
+---
+layout: post
+title: OpenGenesis 1.5.0 - Release
+category: news
+tags: news
+year: 2013
+month: 1
+day: 30
+published: true
+summary: We've just released <strong>OpenGenesis 1.5.0</strong> - infrastructure automation and management tool for DevOps
+image: release.png
+---
+
+<div class="row">
+	<div class="span9 columns">
+	  <h2>Release 1.5.0</h2>
+	  <p>We've just released <strong>OpenGenesis 1.5.0</strong> - infrastructure automation and management tool for DevOps</p>
+      <p>This time we've concentrated on security and integration issues with aim to have full LDAP and Active Directory support.</p>
+      <h2>Fixed issues</h2>
+      <p>
+       <ul>
+         <li>Hide configuration passwords values from rest responses</li>
+         <li>Access to static resources restricted to Genesis resources</li>
+         <li>Various UI fixes</li>
+       </ul>
+      </p>
+      <h2>New features</h2>
+        <p>
+         <ul>
+           <li>Integration with LDAP services</li>
+           <li>Integration with external Active Directory</li>
+           <li>Static validation of configurations on start and upon modification</li>
+         </ul>
+        </p>
+           <h2>Technical issues</h2>
+            <p>
+             <ul>
+               <li>Migrated to akka 2.0.4</li>
+               <li>Added support for coffeescript</li>
+               <li>Static validation of plugin configurations</li>
+             </ul>
+            </p>
+	</div>
+</div>
