@@ -94,6 +94,8 @@ function(genesis, status, $, _, Backbone) {
       }),
       dataType: "json",
       contentType : 'application/json'
+    }).pipe(function(ajax) {
+        return ajax.result ? ajax.result : ajax;
     })
   }
 
@@ -232,13 +234,14 @@ function(genesis, status, $, _, Backbone) {
         var successfullyProcessed = [];
         _(data).each(function(variable){
           var $input = self.$("#" + escapeCss(variable.name));
+          var isValid = true;
           if (self._isMultiValue(variable)) {
-            var olValue = nameValueMap[variable.name];
-
-            if(!_(variable.values).hasOwnProperty(olValue)) { //if old value doesn't conform to new values map
+            var previousValue = nameValueMap[variable.name];
+            if(!variable.values.hasOwnProperty(previousValue)) { //if old value doesn't conform to new values map
               var descendants = self.graph.allDescendants(variable.name);
               invalidVars = _.union(invalidVars, descendants); // all descendants concerned to be invalid
-              _.intersection(successfullyProcessed, descendants).forEach(function(i) {self._disable("#" + i)})
+              _.intersection(successfullyProcessed, descendants).forEach(function(i) { self._disable("#" + i) });
+              isValid = false;
             }
 
             if (!_(invalidVars).contains(variable.name)) {
@@ -249,12 +252,14 @@ function(genesis, status, $, _, Backbone) {
               self._disable($input)
             }
           }
-          if(nameValueMap[variable.name]) {
+          if(nameValueMap.hasOwnProperty(variable.name) && isValid) {
             $input.val(nameValueMap[variable.name])
           }
-        })
-      }).fail(function(){
-        self.trigger("configuration-error")
+        });
+        self.trigger("configuration-success");
+      }).fail(function(e){
+        var response = JSON.parse(e.responseText);
+        self.trigger("configuration-error", e);
       }).always(function() {
         genesis.app.trigger("page-view-loading-completed");
       });
@@ -302,6 +307,7 @@ function(genesis, status, $, _, Backbone) {
       });
 
       this.delegateEvents(events);
+      self.trigger("configuration-success");
     }
   });
 

@@ -22,12 +22,10 @@
  */
 package com.griddynamics.genesis.template.dsl.groovy
 
-import groovy.lang.{Binding, GroovyObjectSupport, Closure}
-import scala._
+import groovy.lang.{GroovyObjectSupport, Closure}
 import collection.mutable.ListBuffer
 import com.griddynamics.genesis.template._
 import java.lang.IllegalStateException
-import scala.Some
 import com.griddynamics.genesis.repository.DatabagRepository
 import support.{EnvConfigSupport, UnifiedDatabagSupport, ProjectDatabagSupport, SystemWideContextSupport}
 import com.griddynamics.genesis.api.Configuration

@@ -43,7 +43,6 @@ import java.lang.IllegalStateException
 import java.util.concurrent.TimeUnit
 import org.codehaus.groovy.runtime.{InvokerHelper, MethodClosure}
 import org.springframework.core.convert.ConversionService
-import support.EnvConfigSupport
 
 class GroovyTemplateService(val templateRepoService : TemplateRepoService,
                             val stepBuilderFactories : Seq[StepBuilderFactory],
@@ -53,38 +52,37 @@ class GroovyTemplateService(val templateRepoService : TemplateRepoService,
                             envConfigService: EnvironmentService,
                             val cacheManager: CacheManager) extends service.TemplateService with Logging with Cache {
 
-    val CACHE_NAME = "GroovyTemplateService"
+  val CACHE_NAME = "GroovyTemplateService"
 
-    private def templateRepo(projectId: Int) = templateRepoService.get(projectId)
+  private def templateRepo(projectId: Int) = templateRepoService.get(projectId)
 
-    override def defaultTtl = TimeUnit.HOURS.toSeconds(24).toInt
+  override def defaultTtl = TimeUnit.HOURS.toSeconds(24).toInt
 
-    def findTemplate(projectId: Int, name: String, version: String, envConfId: Option[Int] = None) = {
-      val conf = envConfId.flatMap(envConfigService.get(projectId, _)).getOrElse (
-        throw new IllegalArgumentException (s"Couldn't find configuration $envConfId in projectId $projectId ")
-      )
-      getTemplate(projectId, name, version, envConf = conf)
+  def findTemplate(projectId: Int, templateName: String, templateVersion: String, envConfId: Int): Option[TemplateDefinition] = {
+    val config = envConfigService.get(projectId, envConfId).getOrElse (
+      throw new IllegalArgumentException (s"Couldn't find configuration $envConfId in projectId $projectId ")
+    )
+    getTemplate(projectId, templateName, templateVersion, envConf = config)
+  }
+
+  def findTemplate(env: Environment) =
+    findTemplate(env.projectId, env.templateName, env.templateVersion, env.configurationId)
+
+  def getTemplate(projectId: Int, name: String, version: String, envConf: Configuration) : Option[TemplateDefinition] = {
+    val body = templateRawContent(projectId, name, version)
+    body.flatMap(fullDefinition(_, projectId, envConf).map(et =>
+      new GroovyTemplateDefinition(et, conversionService, stepBuilderFactories)
+    ))
+  }
+
+  override def descTemplate(projectId: Int, name: String, version: String) = {
+    for (
+      body <- templateRawContent(projectId, name, version);
+      definition <- highLevelDefinition(body)
+    ) yield {
+      new TemplateDescription(name, version, definition.createWorkflow, definition.destroyWorkflow, definition.workflows.map(_.name), body)
     }
-
-    def findTemplate(env: Environment) =
-      findTemplate(env.projectId, env.templateName, env.templateVersion, Some(env.configurationId))
-
-    def getTemplate(projectId: Int, name: String, version: String, envConf: Configuration) : Option[TemplateDefinition] = {
-        val body = templateRawContent(projectId, name, version)
-        body.flatMap(fullDefinition(_, projectId, envConf).map(et =>
-            new GroovyTemplateDefinition(et, conversionService, stepBuilderFactories)
-        ))
-    }
-
-    override def descTemplate(projectId: Int, name: String, version: String) = {
-      for (
-        body <- templateRawContent(projectId, name, version);
-        definition <- highLevelDefinition(body)
-      ) yield {
-        new TemplateDescription(name, version, definition.createWorkflow, definition.destroyWorkflow, definition.workflows.map(_.name), body)
-      }
-    }
-
+  }
 
   def templateRawContent(projectId: Int, name: String, version: String): Option[String] = {
     val key = TmplCacheKey(name, version, projectId)
@@ -98,23 +96,30 @@ class GroovyTemplateService(val templateRepoService : TemplateRepoService,
   def listTemplates(projectId: Int) = templatesMap(projectId).values.toSeq
 
   private def templatesMap(projectId: Int) = {
-      val sources = templateRepo(projectId).listSources()
-      (for ((version, body) <- sources) yield try {
-          for(template <- highLevelDefinition(body)) yield {
-            val key = TmplCacheKey(template.name, template.version, projectId)
-            val value = new VersionedTemplate(version.name)
-            cacheManager.createCacheIfAbsent(CacheConfig(CACHE_NAME, defaultTtl, maxEntries))
-            cacheManager.putInCache(CACHE_NAME, key, value) //todo (RB): we assume repo is not using vsc versions
+    def putInCache(template: EnvironmentTemplate, version: VersionedTemplate) {
+      val key = TmplCacheKey(template.name, template.version, projectId)
+      val value = new VersionedTemplate(version.name)
+      cacheManager.createCacheIfAbsent(CacheConfig(CACHE_NAME, defaultTtl, maxEntries))
+      cacheManager.putInCache(CACHE_NAME, key, value) //todo (RB): we assume repo is not using vsc versions
+    }
 
-            val description = new TemplateDescription(template.name, template.version, template.createWorkflow, template.destroyWorkflow, template.workflows.map(_.name), body)
-            ((template.name, template.version), description)
-          }
-        } catch {
-          case t: Exception => {
-              log.error(t, "Error in template name or version: %s", t)
-              None
-          }
-      }).flatten.toMap
+    def templateDescription(template: EnvironmentTemplate, body: String): TemplateDescription = {
+      new TemplateDescription(template.name, template.version, template.createWorkflow, template.destroyWorkflow, template.workflows.map(_.name), body)
+    }
+
+    val sources = templateRepo(projectId).listSources()
+
+    (for ((version, body) <- sources) yield try {
+        for(template <- highLevelDefinition(body)) yield {
+          putInCache(template, version)
+          ((template.name, template.version), templateDescription(template, body))
+        }
+      } catch {
+        case t: Exception => {
+            log.error(t, "Error in template name or version: %s", t)
+            None
+        }
+    }).flatten.toMap
   }
 
   private def highLevelDefinition(body: String): Option[EnvironmentTemplate] = {
@@ -122,10 +127,11 @@ class GroovyTemplateService(val templateRepoService : TemplateRepoService,
   }
 
   private def fullDefinition(body: String, projectId: Int, envConf: Configuration): Option[EnvironmentTemplate] = {
-    buildTemplate(body, new EnvTemplateBuilder(projectId, dataSourceFactories, databagRepository, envConf), Some(projectId))
+    val builder = new EnvTemplateBuilder(projectId, dataSourceFactories, databagRepository, envConf)
+    buildTemplate(body, builder, Some(projectId))
   }
 
-  private def buildTemplate(body: String, builder: TemplateBuilder with DslDelegate, projectId: Option[Int]): Option[EnvironmentTemplate] = {
+  private def buildTemplate(body: String, builder: TemplateBuilder with DslDelegate with GroovyObjectSupport, projectId: Option[Int]): Option[EnvironmentTemplate] = {
     val templateDecl = new BlockDeclaration
     val methodClosure = new MethodClosure(templateDecl, "declare")
 
@@ -148,8 +154,8 @@ class GroovyTemplateService(val templateRepoService : TemplateRepoService,
     collectFirst { case (nameVersion, body) if nameVersion.name.toUpperCase.endsWith(name.toUpperCase) => body }
 
   private def evaluateIncludes(projectId: Int, includes: Seq[String], groovyShell: GroovyShell) {
-      for(include <- includes;
-          body    <- getBody(projectId, include)) groovyShell.evaluate(body)
+    for(include <- includes;
+          body  <- getBody(projectId, include)) groovyShell.evaluate(body)
   }
 
   def clearCache(projectId: Int) {
@@ -194,14 +200,14 @@ class StepBodiesCollector(variables: Map[String, AnyRef],
 trait ContextAccess extends ((scala.collection.Map[String, Any]) => Any)
 
 object UninitializedStepDetails extends Step {
-    override def stepDescription = "..."
+  override def stepDescription = "..."
 }
 
 class GroovyAttrEntityWrapper(entity: EntityWithAttrs) extends GroovyObjectSupport {
   override def getProperty(property: String) = try {
     entity.get(EntityAttr(property)).getOrElse(InvokerHelper.getProperty(entity, property))
-  }  catch {
-      case e: MissingPropertyException => null
+  } catch {
+    case e: MissingPropertyException => null
   }
 }
 
@@ -332,7 +338,7 @@ class GroovyWorkflowDefinition(val template: EnvironmentTemplate, val workflow :
   def validatePreconditions(variables: Map[String, Any], config: Configuration): ExtendedResult[_] = {
     val errors = workflow.preconditions.map { case (validationFailureMessage, checkClosure) =>
 //      checkClosure.setProperty(Reserved.configRef, EnvConfigSupport.asGroovyMap(config)) TODO: should it be removed completely?
-      variables.map{ case(key,value) => checkClosure.setProperty(key, value) }
+      checkClosure.setDelegate(new ScopeHolder(variables))
       if (!checkClosure.call()) Some(validationFailureMessage) else None
     }.flatten.toSeq
 

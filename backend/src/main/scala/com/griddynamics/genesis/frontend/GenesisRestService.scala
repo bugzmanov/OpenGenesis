@@ -154,7 +154,7 @@ class GenesisRestService(storeService: StoreService,
       storeService.getLogs(actionUUID).map { entry => StepLogEntry(entry.timestamp, entry.message) }
 
     def queryVariables(projectId: Int, envConfigId: Int, templateName: String, templateVersion: String, workflow: String, variables: Map[String, String]): ExtendedResult[Seq[Variable]] = {
-        val tmpl = templateService.findTemplate(projectId, templateName, templateVersion, Some(envConfigId)).getOrElse(
+        val tmpl = templateService.findTemplate(projectId, templateName, templateVersion, envConfigId).getOrElse(
           return Failure(isNotFound = true, compoundServiceErrors = Seq("Template wasn't found"))
         )
         tmpl.getValidWorkflow(workflow).map(workflow => workflow.partial(variables).map(varDesc(_)))
@@ -171,7 +171,7 @@ class GenesisRestService(storeService: StoreService,
     }
 
     def getWorkflow(projectId: Int, envConfigId: Int, templateName: String, templateVersion: String, workflowName: String) : ExtendedResult[com.griddynamics.genesis.api.Workflow] =  {
-        templateService.findTemplate(projectId, templateName, templateVersion, Some(envConfigId)).map(_.getValidWorkflow(workflowName)) match {
+        templateService.findTemplate(projectId, templateName, templateVersion, envConfigId).map(_.getValidWorkflow(workflowName)) match {
             case Some(x) => x.map(workflowDesc(_))
             case _ => Failure(isNotFound = true)
         }

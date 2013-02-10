@@ -72,7 +72,7 @@ trait TemplateService {
     def listTemplates(projectId: Int): Seq[TemplateDescription]
     def descTemplate(projectId: Int, templateName: String, templateVersion: String): Option[TemplateDescription]
 
-    def findTemplate(projectId: Int, templateName: String, templateVersion: String, envConfId: Option[Int] = None): Option[TemplateDefinition]
+    def findTemplate(projectId: Int, templateName: String, templateVersion: String, envConfId: Int): Option[TemplateDefinition]
     def findTemplate(env: Environment): Option[TemplateDefinition]
 
     def templateRawContent(projectId: Int, name: String, version: String): Option[String]

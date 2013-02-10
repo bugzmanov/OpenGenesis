@@ -63,7 +63,7 @@ function(genesis, backend,  status, variablesmodule, gtemplates, validation, Bac
       "click .next-button": "nextStep",
       "click .back-button": "prevStep",
       "click .tab": "stepChanged",
-      "click .last-step-button" : "createEnvironment"
+      "click .last-step-button:not(.disabled)" : "createEnvironment"
     },
 
     onClose: function() {
@@ -225,6 +225,7 @@ function(genesis, backend,  status, variablesmodule, gtemplates, validation, Bac
     template: "app/templates/createenv/environment_settings.html",
     errorTemplate: "app/templates/createenv/environment_settings_error.html",
     preconditionErrorTemplate: "app/templates/createenv/preconditions_error.html",
+    envConfigErrorTemplate: "app/templates/createenv/envconfig_validation_error.html",
 
     events: {
       "change #configuration": "configUpdated"
@@ -268,7 +269,7 @@ function(genesis, backend,  status, variablesmodule, gtemplates, validation, Bac
         self.variables = workflow.get('variables');
         self.renderVariablesForm(currentTemplate, workflow, configurationId);
       }).fail(function (jqXHR) {
-        self.renderError(jqXHR, self.preconditionErrorTemplate);
+        self.renderError(jqXHR, self.envConfigErrorTemplate);
       }).always(function () {
         genesis.app.trigger("page-view-loading-completed");
       });
@@ -295,12 +296,13 @@ function(genesis, backend,  status, variablesmodule, gtemplates, validation, Bac
 
     renderError: function(error, htmltemplate) {
       var view = this;
-      view.$("#ready").hide();
+      $("#ready").addClass('disabled');
       if(error.status === 400) {
         var errorMsg = _.has(error, "responseText") ? JSON.parse(error.responseText) : error;
         $.when(genesis.fetchTemplate(htmltemplate || this.errorTemplate)).done(function(tmpl){
-//          view.$el.html(tmpl({error: errorMsg}));
-          view.$('#workflow_vars').html(tmpl({error: errorMsg}));
+          view.$('.create-parameters').hide();
+          view.$('#validation-error').show();
+          view.$('#validation-error').html(tmpl({error: errorMsg}));
         });
       }
     },
@@ -340,10 +342,22 @@ function(genesis, backend,  status, variablesmodule, gtemplates, validation, Bac
 
       var self = this;
 
+      this.inputsView.bind("configuration-error", function(e) {
+        $(".ready").addClass("disabled");
+        self.renderError(e, self.envConfigErrorTemplate)
+      });
+
+      this.inputsView.bind("configuration-success", function(e) {
+        $("#ready").removeClass("disabled");
+        self.$('.create-parameters').show();
+        self.$('#validation-error').hide();
+      });
+
       this.inputsView.render(function () {
         self.$('input:not(:hidden):first').focus();
         validation.bindValidation(self.model, self._settingsForm());
       });
+
     },
 
 

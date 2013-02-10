@@ -28,7 +28,8 @@ class VariableDeclaration(dsObjSupport: Option[Closure[Unit]],
     newValue match {
       case cl: Closure[_] =>
         builders += Delegate(cl).to(new DSAwareVariableBuilder(builders, dataSourceFactories, projectId, None, property, dsObjSupport))
-      case _ => super.setProperty(property, newValue)
+      case _ =>
+        super.setProperty(property, newValue)
     }
   }
 

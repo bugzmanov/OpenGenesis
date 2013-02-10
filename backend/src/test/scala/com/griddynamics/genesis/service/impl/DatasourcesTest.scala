@@ -5,12 +5,13 @@ import org.springframework.core.convert.support.DefaultConversionService
 import com.griddynamics.genesis.util.IoUtil
 import org.mockito.{Matchers, Mockito}
 import org.junit.Test
-import com.griddynamics.genesis.service.{EnvironmentService, TemplateRepoService, VariableDescription}
+import com.griddynamics.genesis.service.VariableDescription
 import org.scalatest.junit.AssertionsForJUnit
 import org.scalatest.mock.MockitoSugar
-import com.griddynamics.genesis.template.VersionedTemplate
-import com.griddynamics.genesis.repository.DatabagRepository
 import com.griddynamics.genesis.cache.NullCacheManager
+import org.mockito.Mockito._
+import com.griddynamics.genesis.template.VersionedTemplate
+import com.griddynamics.genesis.api
 
 class DatasourcesTest  extends AssertionsForJUnit with MockitoSugar with DSLTestUniverse {
 
@@ -32,10 +33,11 @@ class DatasourcesTest  extends AssertionsForJUnit with MockitoSugar with DSLTest
         VersionedTemplate("InlineSources", "0.1") -> bodyWithInlining
       )
     )
+    when(configService.get(Matchers.any(), Matchers.any())).thenReturn(Some(new api.Configuration(Some(0), "", 0, None, Map())))
 
-    private def testTemplate = templateService.findTemplate(0, "DataSources", "0.1").get
+    private def testTemplate = templateService.findTemplate(0, "DataSources", "0.1", 1).get
 
-    private def testInlineTemplate = templateService.findTemplate(0, "InlineSources", "0.1").get
+    private def testInlineTemplate = templateService.findTemplate(0, "InlineSources", "0.1", 1).get
 
     @Test def testOneOfVariable() {
         val template = testTemplate
