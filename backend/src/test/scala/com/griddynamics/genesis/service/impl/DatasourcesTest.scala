@@ -12,27 +12,21 @@ import com.griddynamics.genesis.template.VersionedTemplate
 import com.griddynamics.genesis.repository.DatabagRepository
 import com.griddynamics.genesis.cache.NullCacheManager
 
-class DatasourcesTest  extends AssertionsForJUnit with MockitoSugar  {
+class DatasourcesTest  extends AssertionsForJUnit with MockitoSugar with DSLTestUniverse {
 
-    val templateRepository = mock[TemplateRepository]
-    val databagRepository = mock[DatabagRepository]
-    val templateRepoService = mock[TemplateRepoService]
-  val envService = mock[EnvironmentService]
 
-  Mockito.when(templateRepoService.get(0)).thenReturn(templateRepository)
-
-  Mockito.when(envService.getDefault(Matchers.anyInt)).thenReturn(None)
-  Mockito.when(envService.list(Matchers.anyInt)).thenReturn(Seq())
+  Mockito.when(configService.getDefault(Matchers.anyInt)).thenReturn(None)
+  Mockito.when(configService.list(Matchers.anyInt)).thenReturn(Seq())
 
   val templateService = new GroovyTemplateService(templateRepoService,
         List(new DoNothingStepBuilderFactory), new DefaultConversionService,
         Seq(new ListVarDSFactory, new DependentListVarDSFactory, new NoArgsDSFactory),
-    databagRepository, envService, NullCacheManager)
+    databagRepository, configService, NullCacheManager)
 
     val body = IoUtil.streamAsString(classOf[GroovyTemplateServiceTest].getResourceAsStream("/groovy/DataSources.genesis"))
     val bodyWithInlining = IoUtil.streamAsString(classOf[GroovyTemplateServiceTest].getResourceAsStream("/groovy/InlineDatasources.genesis"))
 
-    Mockito.when(templateRepository.listSources).thenReturn(
+    Mockito.when(templateRepository.listSources()).thenReturn(
       Map(
         VersionedTemplate("DataSources", "0.1") -> body,
         VersionedTemplate("InlineSources", "0.1") -> bodyWithInlining

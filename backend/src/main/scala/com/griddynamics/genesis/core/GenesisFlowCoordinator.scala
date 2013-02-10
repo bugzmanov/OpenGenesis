@@ -254,8 +254,7 @@ trait StepExecutionContextHolder extends GenesisFlowCoordinatorBase {
 
     override def buildStep(builder: StepBuilder) = safe {
         builder match {
-            case proxy: StepBuilderProxy =>  proxy.newStep(globals, Reserved.instanceRef -> env.copy,
-              Reserved.configRef -> EnvConfigSupport.asGroovyMap(config))
+            case proxy: StepBuilderProxy =>  proxy.newStep(globals, Reserved.instanceRef -> env.copy) //TODO: NOTE!!!! Reserved.configRef -> EnvConfigSupport.asGroovyMap(config) was here
             case _ => builder.newStep
         }
     }

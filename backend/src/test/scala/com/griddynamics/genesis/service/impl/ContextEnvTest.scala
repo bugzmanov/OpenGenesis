@@ -43,10 +43,12 @@ import com.griddynamics.genesis.template.VersionedTemplate
 import com.griddynamics.genesis.plugin.GenesisStep
 import com.griddynamics.genesis.cache.NullCacheManager
 
-class ContextEnvTest extends AssertionsForJUnit with MockitoSugar {
-  val templateRepository = mock[TemplateRepository]
-  val templateRepoService = mock[TemplateRepoService]
+class ContextEnvTest extends AssertionsForJUnit with MockitoSugar with DSLTestUniverse {
+//  val templateRepository = mock[TemplateRepository]
+//  val templateRepoService = mock[TemplateRepoService]
+
   val env = new Environment("test_env", EnvStatus.Ready, "creator", new Timestamp(new Date().getTime), None, None, "", "", 0, 0)
+
   val storeService = {
     val storeService = mock[StoreService]
     when(storeService.startWorkflow(Matchers.any(), Matchers.any())).thenReturn((env, mock[Workflow], List()))
@@ -70,10 +72,12 @@ class ContextEnvTest extends AssertionsForJUnit with MockitoSugar {
   }
 
   val stepCoordinatorFactory = mock[StepCoordinatorFactory]
-  val databagRepository = mock[DatabagRepository]
+//  val databagRepository = mock[DatabagRepository]
   val body = IoUtil.streamAsString(classOf[GroovyTemplateServiceTest].getResourceAsStream("/groovy/ContextEnv.genesis"))
   Mockito.when(templateRepository.listSources).thenReturn(Map(VersionedTemplate("1") -> body))
-  Mockito.when(templateRepoService.get(0)).thenReturn(templateRepository)
+//
+//  Mockito.when(templateRepoService.get(0)).thenReturn(templateRepository)
+
   val templateService = new GroovyTemplateService(templateRepoService,
     List(new DoNothingStepBuilderFactory), new DefaultConversionService,
     Seq(new ListVarDSFactory, new DependentListVarDSFactory), databagRepository, envService, NullCacheManager)

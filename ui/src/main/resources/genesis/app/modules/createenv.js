@@ -19,7 +19,7 @@ function(genesis, backend,  status, variablesmodule, gtemplates, validation, Bac
     }
   });
 
-  var Configurations = Backbone.Collection.extend({
+  var Configurations = genesis.Backbone.Collection.extend({
     initialize: function(items, options) {
       this.projectId = options.projectId;
     },
@@ -226,44 +226,52 @@ function(genesis, backend,  status, variablesmodule, gtemplates, validation, Bac
     errorTemplate: "app/templates/createenv/environment_settings_error.html",
     preconditionErrorTemplate: "app/templates/createenv/preconditions_error.html",
 
+    events: {
+      "change #configuration": "configUpdated"
+    },
+
     initialize: function(options) {
       this.variables = [];
       this.templateCollection = options.templates;
       this.project = options.project;
-      this.model.bind("change:templateCombo", this.updateView, this);
+      this.model.bind("change:templateCombo", this.render, this);
     },
 
-    updateView: function(model, templateCombo) {
+    configUpdated: function(event) {
+      var value = $(event.currentTarget).val();
+      if(value) {
+        if (!this.inputsView) {
+          this.updateView(this.model, this.model.get("templateCombo"), value)
+        } else {
+          this.inputsView.updateConfigurationId(value)
+        }
+      }
+    },
+
+    updateView: function(model, templateCombo, configurationId) {
       var nameAndVersion = templateCombo.split('/');
-      var newTemplate = this.templateCollection.find(function(template) {
+      var currentTemplate = this.templateCollection.find(function(template) {
         return template.get('name') === nameAndVersion[0] && template.get('version') === nameAndVersion[1]
       });
-      if(newTemplate) {
-        var desc = new gtemplates.TemplateModel({name: newTemplate.get('name'), version:  newTemplate.get('version')}, {projectId: this.project.id});
-        genesis.app.trigger("page-view-loading-started");
-        var self = this;
 
-        self.$el.html("");
-        $.when(desc.fetch()).done(function() {
-          var workflow = new gtemplates.WorkflowModel(
-            {name: newTemplate.get('name'), version: newTemplate.get('version')},
-            {projectId: self.project.id, workflow: desc.get('createWorkflow').name}
-          );
+      if (!currentTemplate) return; //todo: how can this happen??
 
-          $.when(workflow.fetch()).done(function() {
-            self.variables = workflow.get('result').variables;
-            self.render(newTemplate, workflow.workflow);
-          }).fail(function (jqXHR) {
-              self.renderError(jqXHR, self.preconditionErrorTemplate);
-          }).always(function () {
-              genesis.app.trigger("page-view-loading-completed");
-          });
-        })
-        .fail(function(jqXHR) {
-          self.renderError(jqXHR);
-          genesis.app.trigger("page-view-loading-completed");
-        });
-      }
+      genesis.app.trigger("page-view-loading-started");
+
+      var workflow = new gtemplates.WorkflowModel(
+        {name: currentTemplate.get('name'), version: currentTemplate.get('version')},
+        {projectId: this.project.id, workflow: currentTemplate.get('createWorkflow')}
+      );
+
+      var self = this;
+      $.when(workflow.fetch({ data: $.param({ configurationId: configurationId}) })).done(function() {
+        self.variables = workflow.get('variables');
+        self.renderVariablesForm(currentTemplate, workflow, configurationId);
+      }).fail(function (jqXHR) {
+        self.renderError(jqXHR, self.preconditionErrorTemplate);
+      }).always(function () {
+        genesis.app.trigger("page-view-loading-completed");
+      });
     },
 
     modelValues: function() {
@@ -291,16 +299,20 @@ function(genesis, backend,  status, variablesmodule, gtemplates, validation, Bac
       if(error.status === 400) {
         var errorMsg = _.has(error, "responseText") ? JSON.parse(error.responseText) : error;
         $.when(genesis.fetchTemplate(htmltemplate || this.errorTemplate)).done(function(tmpl){
-          view.$el.html(tmpl({error: errorMsg}));
+//          view.$el.html(tmpl({error: errorMsg}));
+          view.$('#workflow_vars').html(tmpl({error: errorMsg}));
         });
       }
     },
 
-    render: function (template, workflow) {
+
+    render: function () {
       var view = this;
       validation.unbindValidation(this.model, this._settingsForm());
       $("#ready").show();
       var configs = new Configurations([], {projectId: this.project.id});
+      this.$el.html("");
+
       $.when(genesis.fetchTemplate(this.template), configs.fetch()).done(function (tmpl) {
         if (configs.size() == 0) {
           view.renderError(
@@ -309,24 +321,31 @@ function(genesis, backend,  status, variablesmodule, gtemplates, validation, Bac
           );
           return;
         }
-        view.$el.html(tmpl({configs: configs.toJSON()}));
+        view.$el.html(tmpl({
+          configs: configs.toJSON()
+        }));
 
-        if (template && workflow) {
-          var inputsView = new variablesmodule.Views.InputControlsView({
-            el: view.$('#workflow_vars'),
-            variables: view.variables,
-            projectId: view.project.id,
-            workflow: workflow,
-            template: template
-          });
-
-          inputsView.render(function() {
-            view.$('input:not(:hidden):first').focus();
-            validation.bindValidation(view.model, view._settingsForm());
-          });
-        }
       });
     },
+
+    renderVariablesForm: function (template, workflow, configurationId) {
+      this.inputsView = new variablesmodule.Views.InputControlsView({
+        el: this.$('#workflow_vars'),
+        variables: this.variables,
+        projectId: this.project.id,
+        workflow: workflow,
+        template: template,
+        configurationId: configurationId
+      });
+
+      var self = this;
+
+      this.inputsView.render(function () {
+        self.$('input:not(:hidden):first').focus();
+        validation.bindValidation(self.model, self._settingsForm());
+      });
+    },
+
 
     /* override */ variablesModel: function() {
        return this.variables;
