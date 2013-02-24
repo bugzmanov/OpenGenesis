@@ -1,0 +1,46 @@
+---
+layout: post
+title: OpenGenesis 2.0.0 - Major Release!
+category: news
+tags: news
+year: 2013
+month: 1
+day: 30
+published: true
+summary: Major release of <strong>OpenGenesis 2.0.0</strong> - making solution more stable and scalable with scheduler and agents based workload distribution
+image: release-2.0.png
+---
+
+<div class="row">
+	<div class="span9 columns">
+	  <h2>Release 2.0.0</h2>
+	  <p>We've finally released <strong>OpenGenesis 2.0.0</strong> - result of two months of a hard work</p>
+      <p>The main concern of these release is asynchronous work and distributed executions. In order to make solution more stable and scalable
+      To achieve these goals we added support for agents - software to be deployed on target machines to act as a slave node.
+      And also added support for scheduled workflow execution. For now only destroy can be scheduled, thus allowing to specify automatic destruction time.
+      But stay tuned! :)</p>
+
+      <h2>New features</h2>
+        <p>
+         <ul>
+           <li>Agents - allows to distribute workload from genesis server to registered "slave" nodes</li>
+           <li>Lease time - allows to specify instance time to live - time for automatic destruction, which is a big deal in cloud based QA environments</li>
+           <li><a href="http://en.wikipedia.org/wiki/HATEOAS">Hypermedia support</a> for REST API: details can be found <a href="https://github.com/griddynamics/OpenGenesis/wiki/REST-API">here</a></li>
+         </ul>
+        </p>
+        <h2>Technical issues</h2>
+        <p>
+         <ul>
+           <li>Migrated to <a href="http://www.scala-lang.org/node/27499">Scala 2.10.0</a> and <a href="http://akka.io/news/2012/12/21/akka-2.1.0-released.html">Akka 2.1.0</a></li>
+           <li>Metrics gathering - to get better understanding how application behaves in production systems we'd added <a href="http://metrics.codahale.com/manual/core/">various metrics counters</a>, which will allow us to monitor and improve Genesis in the future </li>
+         </ul>
+        </p>
+        <h2>Stats</h2>
+        <p>
+         <ul>
+           <li><strong>310 changed files</strong> with <strong>11,227 additions</strong> and <strong>2,756 deletions</strong></li>
+           <li><strong>16 major issues</strong> fixed</li>
+         </ul>
+        </p>
+	</div>
+</div>
