@@ -98,7 +98,6 @@ genesis.chef.endpoint = https://api.opscode.com/organizations/<strong>&lt;YOUR_O
     </p>
     <h2>Destroying environment</h2>
     <p>When you've done playing with erlang, you can easily destroy this environment. This will force genesis to clean node records from chef server and destroy provisioned virtual machines.</p>
-
     <h2>Running server demonstration</h2>
     <ul class="thumbnails">
         <li class="span3">
@@ -117,5 +116,14 @@ genesis.chef.endpoint = https://api.opscode.com/organizations/<strong>&lt;YOUR_O
             </a>
         </li>
     </ul>
+    <h2>What's next</h2>
+    <p>Learn about:</p>
+    <ul>
+        <li><a href="https://github.com/griddynamics/OpenGenesis/wiki/Solution-overview">Core concepts of OpenGenesis</a></li>
+        <li><a href="https://github.com/griddynamics/OpenGenesis/wiki/Genesis-DSL">DSL for environment management</a></li>
+        <li><a href="https://github.com/griddynamics/OpenGenesis/wiki/Genesis-core-steps">Steps provided by OpenGenesis platform</a></li>
+    </ul>
+
 </div>
+
 </div>
