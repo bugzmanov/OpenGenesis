@@ -22,6 +22,7 @@ image: release-2.1.png
          <ul>
            <li>Scheduled workflows - new UI for managing scheduled workflow executions</li>
            <li>Databag templates - allows to predefine databag keys and validation rules making it easy to create new databags. <a href="https://github.com/griddynamics/OpenGenesis/wiki/REST:-Databag-templates-API">More information</a></li>
+           <li>Genesis shell - now it's possible to run workflow and create instances from unix/windows shell. You don't have to run full server in this mode. Very handy</li>
          </ul>
         </p>
         <h2>UI improvements</h2>
