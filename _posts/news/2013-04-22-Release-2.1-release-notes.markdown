@@ -1,0 +1,50 @@
+---
+layout: post
+title: OpenGenesis 2.1.0 - this was a hard one!
+category: news
+tags: news
+year: 2013
+month: 4
+day: 22
+published: true
+summary: Release of <strong>OpenGenesis 2.1.0</strong> - a lot of improvements
+image: release-2.1.png
+---
+
+<div class="row">
+	<div class="span9 columns">
+	  <h2>Release 2.1.0</h2>
+	  <p>We've finally released <strong>OpenGenesis 2.1.0</strong> - result of two months work</p>
+      <p>Scheduled workflow executions and databag templates were the main concerns of this release. But we've added bunch of pleasant improvements as well.</p>
+
+      <h2>New features</h2>
+        <p>
+         <ul>
+           <li>Scheduled workflows - new UI for managing scheduled workflow executions</li>
+           <li>Databag templates - allows to predefine databag keys and validation rules making it easy to create new databags. <a href="https://github.com/griddynamics/OpenGenesis/wiki/REST:-Databag-templates-API">More information</a></li>
+           <li></li>
+         </ul>
+        </p>
+        <h2>UI improvements</h2>
+         <ul>
+           <li>Added "Restart" and "Stop" buttons to systems settings, allowing system admin to restart genesis server</li>
+           <li>Improved Action History UI</li>
+           <li>Added splash screen for unsupported browsers. I'm looking at you IE 8!</li>
+           <li>Aded ability to mark some projects as favourite thus making access to such projects easier</li>   
+         </ul>
+        <h2>Technical issues</h2>
+        <p>
+         <ul>
+           <li>Improved template parsing by using scala 2.10 reflection api</li>
+           <li>Added support for HTTPS for Genesis standalone server</li>
+         </ul>
+        </p>
+        <h2>Stats</h2>
+        <p>
+         <ul>
+           <li><strong>367 changed files</strong> with <strong>10,279 additions</strong> and <strong>5,823 deletions</strong></li>
+           <li><strong>42 issues</strong> fixed</li>
+         </ul>
+        </p>
+	</div>
+</div>

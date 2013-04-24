@@ -4,8 +4,8 @@ title: OpenGenesis 2.0.0 - Major Release!
 category: news
 tags: news
 year: 2013
-month: 1
-day: 30
+month: 2
+day: 20
 published: true
 summary: Major release of <strong>OpenGenesis 2.0.0</strong> - making solution more stable and scalable with scheduler and agents based workload distribution
 image: release-2.0.png
